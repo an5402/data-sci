@@ -1,5 +1,7 @@
 These instructions pertain to the current release as of May 9, 2020:
 
+0. Currently, just decision trees work. Graphs are not yet implemented.
+
 1. Pandas and Numpy are dependencies 
 
 2. The docstrings contain all you need to know about valid inputs
