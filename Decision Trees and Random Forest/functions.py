@@ -1,11 +1,13 @@
 """
-Includes all the functions that the decision tree and random forest objects require
+Implements all the functions that the decision tree and random forest objects require
 
 @author: Artem Naida
 """
 
 import numpy as np
 import pandas as pd
+from random import sample
+from math import floor
 
 
 def entropy(data):
@@ -28,25 +30,31 @@ def entropy(data):
 
 def numeric_splitter(data, feature):
     """
-    Finds the best split for continuous data using minimum resulting entropy.
+    Finds the best split for continuous data using maximum information gain.
 
-    Returns the value at which to split and the resulting total resulting entropy.
+    Returns the value at which to split and the resulting information gain.
 
-    :param data: pandas dataframe
+    :param data: pandas data frame
     :param feature: str
     :return: float, float
     """
+    # If you send trivial data, give a trivial result
     input_entropy = entropy(data)
     if input_entropy == 0:
         return None, 0, "numeric"
+
+    # Otherwise, get to work! Create pairs of values and labels to work with
     maximum_information_gain = 0
     pairs = []
     for pair in data[[feature, "lbl"]].values:
         pairs.append(tuple(pair))
+
     # If you pass just 2 data points, give a trivial split
     if len(pairs) == 2:
         midpoint = (pairs[0][0] + pairs[1][0]) / 2
         return midpoint, input_entropy, "numeric"
+
+    # TODO: this while loop is just to delete 'x' and 'y' after use, is this necessary?
     while 1:
         x = []
         y = []
@@ -58,6 +66,7 @@ def numeric_splitter(data, feature):
         overlap = max(min(y), min(x)), min(max(y), max(x))
         break
 
+    # Just consider items in the overlap region
     overlap_items = [item for item in pairs if (overlap[0] <= item[0] <= overlap[1])]
     overlap_middle = (overlap[0] + overlap[1]) / 2 # If no split reduces entropy, just returns this trivial split
 
@@ -73,6 +82,7 @@ def numeric_splitter(data, feature):
         trivial_information_gain = input_entropy - trivial_split_entropy
         return trivial_split, trivial_information_gain, "numeric"
 
+    # See if any point in the overlap region gives a better split
     best_split = overlap_middle
     for item in overlap_items:
         split = item[0]
@@ -98,7 +108,7 @@ def categorical_splitter(data, feature):
     The resulting paths split the data by those points which are in the output group and those which are not.
 
     Returns the chosen 'in' group and the total data entropy associated with the split.
-    :param data: pandas dataframe
+    :param data: pandas data frame
     :param feature: str
     :return: str, float
     """
@@ -143,16 +153,27 @@ def splitter(data, feature):
         raise TypeError("'splitter' function requires a numeric or string type feature column as second arg")
 
 
-def best_split(input_data):
+def best_split(input_data, random_subset=False):
     """
-    Finds the feature that best splits the input data
+    Finds the feature that best splits the input data. If random subset is True, only consider a random
+    subset of features.
 
     Returns the best feature, its type, the associated information gain, and the split
     :param input_data: pandas data frame
-    :return:
+    :param random_subset: boolean
+    :return: str, str, numeric, float
+    :return: str, str, str, float
     """
     # TODO: just return None immediately if this function is passed trivial data
-    # Repeat this behavior for the individual splitter functions as well - maybe at the aggregate level
+    # TODO: is it worth checking? Does the runtime get any better?
+    # TODO: Repeat this behavior for the individual splitter functions as well - maybe at the aggregate level
+    if random_subset:
+        features = input_data.columns.tolist()
+        del features[-1]
+        n = len(features)
+        selection = sample(features, floor(np.log2(n + 1)))
+        selection.append("lbl")
+        input_data = input_data[selection]
     best_feature = None
     feature_type = None
     maximum_information_gain = 0
