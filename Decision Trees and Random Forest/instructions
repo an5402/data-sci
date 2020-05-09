@@ -1,0 +1,13 @@
+These instructions pertain to the current release as of May 9, 2020:
+
+1. Pandas and Numpy are dependencies 
+
+2. The docstrings contain all you need to know about valid inputs
+
+3. If your label is a simple transformation of an existing data column, you should drop that column from your input data to the
+classifier to avoid a trivial result.
+
+4. Name your label column "lbl" and include it at the end of your data frame (the classifier stops checking features as soon as it hits
+a column named "lbl". This will be changed to support easier use later
+
+5. Enjoy! 
