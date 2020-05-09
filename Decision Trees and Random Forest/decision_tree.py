@@ -12,11 +12,13 @@ class DecisionTreeNode:
     A decision tree node
     """
 
-    def __init__(self, input_data):
+    def __init__(self, input_data, random_subset=False):
         """
-        Initializes a new Decision Tree Node
+        Initializes a new Decision Tree Node. If random_subset is True, only chooses features from a random subset,
+        newly created at each node.
 
-        :param input_data: pandas dataframe
+        :param input_data: pandas data frame
+        :param random_subset: boolean
         """
         self.input_data = input_data
         self.n = max(input_data.count())
@@ -27,7 +29,7 @@ class DecisionTreeNode:
             self.decision = None, None, None
             self.information_gain = 0
         else:
-            result = fc.best_split(input_data)
+            result = fc.best_split(input_data, random_subset)
             feature_type = result[0]
             best_feature = result[1]
             split = result[2]
@@ -64,7 +66,6 @@ class DecisionTreeNode:
         """
         Takes a pandas data frame, passes the appropriate portion downstream to the right node.
 
-        :param input_data: pandas data frame
         :return: pandas data frame
         """
         feature_type = self.decision[0]
@@ -83,7 +84,6 @@ class DecisionTreeNode:
         """
         Takes a dataframe, passes the appropriate portion downstream to the left node.
 
-        :param input_data: pandas data frame
         :return: pandas data frame
         """
         feature_type = self.decision[0]
@@ -100,10 +100,11 @@ class DecisionTreeNode:
 
     def send_datapoint(self, datapoint):
         """
-        Takes a new data point as a single row pandas data frame
-        Returns 1 if the point goes right, 0 if it goes left
+        Takes a new data point as a single row pandas data frame.
+        Returns 1 if the point goes right, 0 if it goes left.
+
         :param datapoint: pandas data frame
-        :return:
+        :return: int
         """
         feature_type = self.decision[0]
         feature = self.decision[1]
@@ -124,7 +125,7 @@ class DecisionTreeNode:
     def majority(self):
         label_list = self.input_data["lbl"].tolist()
         labels = set(label_list)
-        max_item = ""
+        max_item = None
         max_count = 0
         for item in labels:
             count = label_list.count(item)
@@ -140,17 +141,19 @@ class DecisionTreeNode:
 
 class DecisionTree:
     """
-    A decision tree
+    A decision tree.
     """
 
-    def __init__(self, input_data, max_levels=None):
+    def __init__(self, input_data, max_levels=None, random_subset=False):
         """
-        Creates a new DecisionTree as a nested list of DecisionTreeNode objects organized by level.
+        Creates a new DecisionTree as a nested list of DecisionTreeNode objects organized by level. If random_subset
+        is True, only chooses features from a random subset at each node.
 
-        :param input_data: pandas dataframe
+        :param input_data: pandas data frame
         :param max_levels: int
+        :param random_subset: boolean
         """
-        self.nodes = [[DecisionTreeNode(input_data)]]
+        self.nodes = [[DecisionTreeNode(input_data, random_subset)]]
         current_level = 0
 
         # This function checks whether all the nodes on your current level are leafs
@@ -170,8 +173,8 @@ class DecisionTree:
             next_level_list = []
             for node in self.nodes[current_level]:
                 if not node.leaf:
-                    left_node = DecisionTreeNode(node.pass_left())
-                    right_node = DecisionTreeNode(node.pass_right())
+                    left_node = DecisionTreeNode(node.pass_left(), random_subset)
+                    right_node = DecisionTreeNode(node.pass_right(), random_subset)
                     node.left = left_node
                     node.right = right_node
                     next_level_list.append(left_node)
@@ -183,7 +186,7 @@ class DecisionTree:
 
     def __str__(self):
         """
-        Prints the list of nodes in the decision tree
+        Prints the list of nodes in the decision tree.
 
         :return: str
         """
@@ -192,7 +195,7 @@ class DecisionTree:
 
     def print_tree(self):
         """
-        Prints a visual representation of the decision tree
+        Prints a visual representation of the decision tree.
 
         :return: str
         """
@@ -209,7 +212,7 @@ class DecisionTree:
 
     def classify_point(self, datapoint):
         """
-        Classifies a new data point
+        Classifies a new data point, represented as a pandas data frame with a single row.
 
         :param datapoint: pandas data frame
         :return: str
