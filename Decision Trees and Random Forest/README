@@ -1,15 +1,15 @@
-These instructions pertain to the current release as of May 9, 2020:
+These instructions pertain to the current release as of May 10, 2020:
 
-0. Currently, just decision trees work. Graphs are not yet implemented.
+0. Graphs are not yet implemented.
 
-1. Pandas and Numpy are dependencies 
+1. Pandas, Numpy, math, and random are dependencies (math and random are included with base Python)
 
 2. The docstrings contain all you need to know about valid inputs
 
 3. If your label is a simple transformation of an existing data column, you should drop that column from your input data to the
-classifier to avoid a trivial result.
+classifier to avoid a trivial result. This instruction is more of a suggestion. 
 
 4. Name your label column "lbl" and include it at the end of your data frame (the classifier stops checking features as soon as it hits
 a column named "lbl". This will be changed to support easier use later
 
-5. Enjoy! 
+5. Always use data science for good. 
